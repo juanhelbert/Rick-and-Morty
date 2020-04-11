@@ -32,7 +32,7 @@ export const Home = () => {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
 
-  const { loading, data } = useQuery(
+  const { loading, error, data } = useQuery(
     GET_CHARACTERS,
     { variables: { page: page, query: searchQuery } }
   )
@@ -49,25 +49,26 @@ export const Home = () => {
       <header>
         <div className='container'>
           <form onSubmit={(e) => (setSearchQuery(query), e.preventDefault())}>
-            <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label="search" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label="search" placeholder='Search by name' />
             <input type="submit" value="Search" className='btn' /><br />
-            {data &&
-              <p><b>{data.characters.info.count} characters</b> were found</p>
+            {(data && !error && !loading) &&
+              <p><b>{data.characters.info.count} characters were found </b></p>
             }
           </form>
         </div>
       </header>
 
       <main className='container'>
-        <section className='cards-wrapper'>
-          {data && data.characters && data.characters.results.map(item => (
-            item.id && <Card key={item.id} data={item} />
-          ))}
+        <section className={`cards-wrapper ${error ? 'flex' : 'grid'}`}>
+          {error ? <b>No matches for your query</b>
+            : data && data.characters && data.characters.results.map(item => (
+              item.id && <Card key={item.id} data={item} />
+            ))}
         </section>
 
         <section className='load-more'>
           {loading ? <Loader />
-            : (
+            : !error && (
               <>
                 {prev &&
                   <button style={{ marginRight: '15px' }} onClick={() => setPage(data.characters.info.prev)}>
